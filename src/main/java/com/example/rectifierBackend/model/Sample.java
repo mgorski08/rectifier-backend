@@ -7,7 +7,7 @@ import javax.persistence.*;
 public class Sample {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
     @ManyToOne
     private Process process;
