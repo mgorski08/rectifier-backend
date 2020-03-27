@@ -51,7 +51,7 @@ public class BathController {
     }
 
     @RequestMapping(value = "{bathId}/occupy", method = RequestMethod.POST)
-    ResponseEntity occupy(@PathVariable long bathId, @RequestParam long userId) {
+    ResponseEntity occupy(@PathVariable long bathId, @RequestBody long userId) {
         User user = userRepository.findById(userId);
         Bath bath = bathRepository.findById(bathId);
         if(bath == null) {
