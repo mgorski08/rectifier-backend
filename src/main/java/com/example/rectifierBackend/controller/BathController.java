@@ -8,6 +8,7 @@ import com.example.rectifierBackend.repository.BathRepository;
 import com.example.rectifierBackend.repository.ProcessRepository;
 import com.example.rectifierBackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,11 @@ public class BathController {
             return new ResponseEntity<String>("Bath not found.", HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<Bath>(bath, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    ResponseEntity getAll() {
+        return new ResponseEntity(bathRepository.findAll(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "{bathId}", method = RequestMethod.DELETE)
