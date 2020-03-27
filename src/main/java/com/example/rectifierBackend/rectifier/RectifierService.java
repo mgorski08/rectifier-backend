@@ -11,13 +11,8 @@ import javax.validation.constraints.NotNull;
 @Service
 public class RectifierService {
 
-    public static Process startProcess(Bath bath) {
-        if (bath == null) {
-            return null;
-        }
-        Process process = new Process();
+    public static void startProcess(Process process, Bath bath) {
         process.setBath(bath);
-        return process;
     }
 
     @Scheduled(fixedRate = 1000)

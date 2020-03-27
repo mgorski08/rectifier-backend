@@ -62,12 +62,13 @@ public class BathController {
     }
 
     @RequestMapping(value = "{bathId}/start", method = RequestMethod.POST)
-    ResponseEntity startProcess(@PathVariable long bathId) {
+    ResponseEntity startProcess(@PathVariable long bathId, @RequestBody Process process) {
         Bath bath = bathRepository.findById(bathId);
         if(bath == null) {
             return new ResponseEntity<String>("Bath not found.", HttpStatus.NOT_FOUND);
         }
-        Process process = RectifierService.startProcess(bath);
+        RectifierService.startProcess(process, bath);
+
         if(process == null) {
             return new ResponseEntity<String>("Couldn't create process.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
