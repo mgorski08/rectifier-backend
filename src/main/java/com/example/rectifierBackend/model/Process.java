@@ -1,6 +1,8 @@
 package com.example.rectifierBackend.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "process")
@@ -9,8 +11,25 @@ public class Process {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
-    private long bathId;
+
+    @OneToOne
+    @NotNull
+    private Bath bath;
+
     private String description;
+
+    private Timestamp startTimestamp;
+
+    @ManyToOne
+    private User operator;
+
+    public Bath getBath() {
+        return bath;
+    }
+
+    public void setBath(Bath bath) {
+        this.bath = bath;
+    }
 
     public long getId() {
         return id;
@@ -20,19 +39,27 @@ public class Process {
         this.id = id;
     }
 
-    public long getBathId() {
-        return bathId;
-    }
-
-    public void setBathId(long bathId) {
-        this.bathId = bathId;
-    }
-
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Timestamp getStartTimestamp() {
+        return startTimestamp;
+    }
+
+    public void setStartTimestamp(Timestamp startTimestamp) {
+        this.startTimestamp = startTimestamp;
+    }
+
+    public User getOperator() {
+        return operator;
+    }
+
+    public void setOperator(User operator) {
+        this.operator = operator;
     }
 }
