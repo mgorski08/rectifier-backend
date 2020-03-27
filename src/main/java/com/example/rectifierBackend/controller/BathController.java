@@ -51,8 +51,8 @@ public class BathController {
     }
 
     @RequestMapping(value = "{bathId}/occupy", method = RequestMethod.POST)
-    ResponseEntity occupy(@PathVariable long bathId, @RequestBody long userId) {
-        User user = userRepository.findById(userId);
+    ResponseEntity occupy(@PathVariable long bathId, @RequestBody User userArg) {
+        User user = userRepository.findById(userArg.getId());
         Bath bath = bathRepository.findById(bathId);
         if(bath == null) {
             return new ResponseEntity<String>("Bath not found.", HttpStatus.NOT_FOUND);
