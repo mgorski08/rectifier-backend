@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/bath")
 @RestController
+@CrossOrigin
 public class BathController {
 
     @Autowired
