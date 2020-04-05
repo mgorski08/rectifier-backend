@@ -10,4 +10,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
 
+    @ManyToOne
+    private Client client;
+
 }
