@@ -1,6 +1,6 @@
 package com.example.rectifierBackend.security.jwt;
 
-import com.example.rectifierBackend.security.services.UserPrinciple;
+import com.example.rectifierBackend.model.User;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -11,12 +11,13 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    private String jwtSecret = "etrfexfbnytgrcvehvtgrcgvyjfertaxbmnmyikuthrg";
+    @Value(value = "${JWT_SECRET}")
+    private String jwtSecret;
 
     private int jwtExpiration = 3600;
 
     public String generateJwtToken(Authentication authentication) {
-        UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+        User userPrinciple = (User) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject(userPrinciple.getUsername())

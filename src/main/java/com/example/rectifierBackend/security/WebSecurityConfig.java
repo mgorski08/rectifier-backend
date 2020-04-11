@@ -1,8 +1,8 @@
 package com.example.rectifierBackend.security;
 
+import com.example.rectifierBackend.repository.UserRepository;
 import com.example.rectifierBackend.security.jwt.JwtAuthEntryPoint;
 import com.example.rectifierBackend.security.jwt.JwtAuthTokenFilter;
-import com.example.rectifierBackend.security.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -22,8 +23,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+//    @Autowired
+//    UserDetailsServiceImpl userDetailsService;
+
     @Autowired
-    UserDetailsServiceImpl userDetailsService;
+    UserRepository userRepository;
 
     @Autowired
     private JwtAuthEntryPoint unauthorizedHandler;
@@ -35,8 +39,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());
+        authenticationManagerBuilder.userDetailsService((String username) -> {
+            return userRepository.findByUsername(username).orElseThrow(
+                    () -> new UsernameNotFoundException("User Not Found with -> username: " + username));
+        }).passwordEncoder(passwordEncoder());
     }
 
     @Bean
@@ -55,7 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable().
                 authorizeRequests()
                 .antMatchers("/auth/**").permitAll()
-                .antMatchers("/**/contacts/**").hasAnyRole("ADMIN","USER")
+                .antMatchers("/**").hasAnyRole("ADMIN","USER")
 				.anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
