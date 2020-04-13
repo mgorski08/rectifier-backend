@@ -9,12 +9,14 @@ public class JwtResponse {
     private String token;
     private String type = "Bearer";
     private String username;
+    private long expirationDate;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public JwtResponse(String token, String username, Collection<? extends GrantedAuthority> authorities) {
+    public JwtResponse(String token, String username,long expirationDate, Collection<? extends GrantedAuthority> authorities) {
         this.token = token;
         this.username = username;
         this.authorities = authorities;
+        this.expirationDate = expirationDate;
     }
 
     public String getAccessToken() {
@@ -35,6 +37,14 @@ public class JwtResponse {
 
     public String getUsername() {
         return username;
+    }
+
+    public long getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(long expirationDate) {
+        this.expirationDate = expirationDate;
     }
 
     public void setUsername(String username) {

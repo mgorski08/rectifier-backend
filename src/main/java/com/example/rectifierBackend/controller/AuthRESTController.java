@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin
 public class AuthRESTController {
+
+    private int jwtExpiration = 3600000;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -46,10 +49,13 @@ public class AuthRESTController {
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = jwtProvider.generateJwtToken(authentication);
-        UserDetails userDetails = (UserDetails) ((org.springframework.security.core.Authentication) authentication).getPrincipal();
+        long iss = new Date().getTime();
+        long exp = iss+ jwtExpiration;
 
-        return ResponseEntity.ok(new JwtResponse(jwt,userDetails.getUsername(), userDetails.getAuthorities()));
+        String jwt = jwtProvider.generateJwtToken(authentication, iss, exp);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        return ResponseEntity.ok(new JwtResponse(jwt,userDetails.getUsername(),exp, userDetails.getAuthorities()));
     }
 
     @PostMapping("/signup")

@@ -14,15 +14,14 @@ public class JwtProvider {
     @Value(value = "${JWT_SECRET}")
     private String jwtSecret;
 
-    private int jwtExpiration = 3600;
 
-    public String generateJwtToken(Authentication authentication) {
+    public String generateJwtToken(Authentication authentication, long iss, long exp) {
         User userPrinciple = (User) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject(userPrinciple.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpiration*1000))
+                .setIssuedAt(new Date(iss))
+                .setExpiration(new Date(exp))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
