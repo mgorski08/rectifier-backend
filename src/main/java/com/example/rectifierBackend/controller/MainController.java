@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 public class MainController {
 
     @GetMapping("")
-    ResponseEntity<?> rootPage(@PathVariable long userId) {
+    ResponseEntity<?> rootPage() {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
