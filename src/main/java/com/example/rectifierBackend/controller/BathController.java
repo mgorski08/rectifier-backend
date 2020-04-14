@@ -34,7 +34,7 @@ public class BathController {
         this.rectifierService = rectifierService;
     }
 
-    @RequestMapping(value = "{bathId}", method = RequestMethod.GET)
+    @GetMapping("{bathId}")
     ResponseEntity getOne(@PathVariable long bathId) {
         Bath bath = bathRepository.findById(bathId);
         if(bath == null) {
@@ -43,18 +43,18 @@ public class BathController {
         return new ResponseEntity<Bath>(bath, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @GetMapping("")
     ResponseEntity getAll() {
         return new ResponseEntity(bathRepository.findAll(), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{bathId}", method = RequestMethod.DELETE)
+    @DeleteMapping("{bathId}")
     ResponseEntity delete(@PathVariable long bathId) {
         bathRepository.deleteById(bathId);
         return new ResponseEntity<Bath>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "{bathId}/occupy", method = RequestMethod.POST)
+    @PostMapping("{bathId}/occupy")
     ResponseEntity occupy(@PathVariable long bathId, @RequestBody User userArg) {
         User user = userRepository.findById(userArg.getId());
         Bath bath = bathRepository.findById(bathId);
@@ -72,7 +72,7 @@ public class BathController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "{bathId}/start", method = RequestMethod.POST)
+    @PostMapping("{bathId}/start")
     ResponseEntity startProcess(@PathVariable long bathId, @RequestBody Process process) {
         Bath bath = bathRepository.findById(bathId);
         if(bath == null) {
@@ -86,7 +86,7 @@ public class BathController {
         return new ResponseEntity<Process>(process, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "add", method = RequestMethod.POST)
+    @PostMapping("add")
     ResponseEntity add(@RequestBody Bath bath) {
         bathRepository.save(bath);
         return new ResponseEntity<Bath>(bath, HttpStatus.OK);

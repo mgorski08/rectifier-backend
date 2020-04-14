@@ -16,10 +16,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 public class UserController {
-    @Autowired
+
     UserRepository userRepository;
 
-    @RequestMapping(value = "{userId}", method = RequestMethod.GET)
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @GetMapping("{userId}")
     ResponseEntity<?> getOne(@PathVariable long userId) {
         User user = userRepository.findById(userId);
         if(user == null) {
@@ -33,7 +37,7 @@ public class UserController {
         return new ResponseEntity<>(SecurityContextHolder.getContext().getAuthentication().getPrincipal(), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{userId}", method = RequestMethod.DELETE)
+    @DeleteMapping("{userId}")
     ResponseEntity<?> delete(@PathVariable long userId) {
         userRepository.deleteById(userId);
         return new ResponseEntity<Bath>(HttpStatus.NO_CONTENT);

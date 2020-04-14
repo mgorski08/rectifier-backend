@@ -16,10 +16,10 @@ import java.io.IOException;
 
 public class JwtAuthTokenFilter extends OncePerRequestFilter {
 
-    @Autowired
+
     private JwtProvider tokenProvider;
 
-    @Autowired
+
     private UserRepository userRepository;
 
     @Override

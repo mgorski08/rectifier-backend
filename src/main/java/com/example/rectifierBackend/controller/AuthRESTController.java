@@ -7,13 +7,11 @@ import com.example.rectifierBackend.message.response.ResponseMessage;
 import com.example.rectifierBackend.model.User;
 import com.example.rectifierBackend.repository.UserRepository;
 import com.example.rectifierBackend.security.jwt.JwtProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,47 +20,49 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @RequestMapping("/auth")
 @RestController
 @CrossOrigin
 public class AuthRESTController {
-
-    private int jwtExpiration = 3600000;
-
-    @Autowired
+    private final long jwtExpiration = 3600000; //milliseconds
     AuthenticationManager authenticationManager;
-
-    @Autowired
     UserRepository userRepository;
-
-    @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
     JwtProvider jwtProvider;
+
+    public AuthRESTController(AuthenticationManager authenticationManager,
+                              UserRepository userRepository,
+                              PasswordEncoder passwordEncoder,
+                              JwtProvider jwtProvider) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtProvider = jwtProvider;
+    }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginForm loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        Authentication authentication =
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername()
+                        , loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         long iss = new Date().getTime();
-        long exp = iss+ jwtExpiration;
+        long exp = iss + jwtExpiration;
 
         String jwt = jwtProvider.generateJwtToken(authentication, iss, exp);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        return ResponseEntity.ok(new JwtResponse(jwt,userDetails.getUsername(),exp, userDetails.getAuthorities()));
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), exp, userDetails.getAuthorities()));
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpForm signUpRequest) {
 
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return new ResponseEntity<>(new ResponseMessage("Fail -> Username is already taken."), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ResponseMessage("Fail -> Username is already taken."),
+                    HttpStatus.BAD_REQUEST);
         }
 
         // Create user account

@@ -12,10 +12,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 public class ClientController {
-    @Autowired
+
     ClientRepository clientRepository;
 
-    @RequestMapping(value = "{clientId}", method = RequestMethod.GET)
+    public ClientController(ClientRepository clientRepository) {
+        this.clientRepository = clientRepository;
+    }
+
+    @GetMapping("{clientId}")
     ResponseEntity getOne(@PathVariable long clientId) {
         Client client = clientRepository.findById(clientId);
         if(client == null) {
@@ -24,13 +28,13 @@ public class ClientController {
         return new ResponseEntity<Client>(client, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{clientId}", method = RequestMethod.DELETE)
+    @DeleteMapping("{clientId}")
     ResponseEntity delete(@PathVariable long clientId) {
         clientRepository.deleteById(clientId);
         return new ResponseEntity<Bath>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "add", method = RequestMethod.POST)
+    @PostMapping("add")
     ResponseEntity add(@RequestBody Client client) {
         clientRepository.save(client);
         return new ResponseEntity<Client>(client, HttpStatus.OK);
