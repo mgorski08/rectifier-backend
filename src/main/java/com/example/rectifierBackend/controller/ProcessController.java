@@ -1,9 +1,8 @@
 package com.example.rectifierBackend.controller;
 
-import com.example.rectifierBackend.model.Bath;
+import com.example.rectifierBackend.message.response.ResponseMessage;
 import com.example.rectifierBackend.model.Process;
 import com.example.rectifierBackend.repository.ProcessRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,24 +19,26 @@ public class ProcessController {
     }
 
     @GetMapping("{processId}")
-    ResponseEntity getOne(@PathVariable long processId) {
+    ResponseEntity<?> getOne(@PathVariable long processId) {
         Process process = processRepository.findById(processId);
         if(process == null) {
-            return new ResponseEntity<String>("Process not found.", HttpStatus.NOT_FOUND);
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseMessage("Process not found."));
         }
-        return new ResponseEntity<Process>(process, HttpStatus.OK);
+        return ResponseEntity.ok(process);
     }
 
     @DeleteMapping("{processId}")
-    ResponseEntity delete(@PathVariable long processId) {
+    ResponseEntity<?> delete(@PathVariable long processId) {
         processRepository.deleteById(processId);
-        return new ResponseEntity<Bath>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("add")
-    ResponseEntity add(@RequestBody Process process) {
+    ResponseEntity<?> add(@RequestBody Process process) {
         processRepository.save(process);
-        return new ResponseEntity<Process>(process, HttpStatus.OK);
+        return ResponseEntity.ok(process);
     }
 
 }

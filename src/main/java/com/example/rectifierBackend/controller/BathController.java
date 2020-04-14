@@ -35,16 +35,16 @@ public class BathController {
     }
 
     @GetMapping("{bathId}")
-    ResponseEntity getOne(@PathVariable long bathId) {
+    ResponseEntity<?> getOne(@PathVariable long bathId) {
         Bath bath = bathRepository.findById(bathId);
         if(bath == null) {
-            return new ResponseEntity<String>("Bath not found.", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Bath not found.", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<Bath>(bath, HttpStatus.OK);
+        return new ResponseEntity<>(bath, HttpStatus.OK);
     }
 
     @GetMapping("")
-    ResponseEntity getAll() {
+    ResponseEntity<?> getAll() {
         return new ResponseEntity(bathRepository.findAll(), HttpStatus.OK);
     }
 

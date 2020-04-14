@@ -25,7 +25,8 @@ import java.util.Set;
 @RestController
 @CrossOrigin
 public class AuthRESTController {
-    private final long jwtExpiration = 3600000; //milliseconds
+    private static final long JWT_EXPIRATION = 3600000; //milliseconds
+
     AuthenticationManager authenticationManager;
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;
@@ -49,7 +50,7 @@ public class AuthRESTController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         long iss = new Date().getTime();
-        long exp = iss + jwtExpiration;
+        long exp = iss + JWT_EXPIRATION;
 
         String jwt = jwtProvider.generateJwtToken(authentication, iss, exp);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -59,12 +60,11 @@ public class AuthRESTController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpForm signUpRequest) {
-
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return new ResponseEntity<>(new ResponseMessage("Fail -> Username is already taken."),
-                    HttpStatus.BAD_REQUEST);
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ResponseMessage("Fail -> Username is already taken."));
         }
-
         // Create user account
         User user = new User(signUpRequest.getUsername(), passwordEncoder.encode(signUpRequest.getPassword()));
 
