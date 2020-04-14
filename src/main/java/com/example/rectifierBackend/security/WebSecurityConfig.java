@@ -3,6 +3,7 @@ package com.example.rectifierBackend.security;
 import com.example.rectifierBackend.repository.UserRepository;
 import com.example.rectifierBackend.security.jwt.JwtAuthEntryPoint;
 import com.example.rectifierBackend.security.jwt.JwtAuthTokenFilter;
+import com.example.rectifierBackend.security.jwt.JwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,17 +23,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    UserRepository userRepository;
+    private UserRepository userRepository;
     private JwtAuthEntryPoint unauthorizedHandler;
+    private JwtProvider tokenProvider;
 
-    public WebSecurityConfig(UserRepository userRepository, JwtAuthEntryPoint unauthorizedHandler) {
+    public WebSecurityConfig(UserRepository userRepository,
+                             JwtAuthEntryPoint unauthorizedHandler,
+                             JwtProvider tokenProvider) {
         this.userRepository = userRepository;
         this.unauthorizedHandler = unauthorizedHandler;
+        this.tokenProvider = tokenProvider;
     }
 
     @Bean
     public JwtAuthTokenFilter authenticationJwtTokenFilter() {
-        return new JwtAuthTokenFilter();
+        return new JwtAuthTokenFilter(tokenProvider, userRepository);
     }
 
     @Override

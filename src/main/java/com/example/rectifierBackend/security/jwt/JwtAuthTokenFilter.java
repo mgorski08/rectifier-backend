@@ -15,12 +15,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class JwtAuthTokenFilter extends OncePerRequestFilter {
-
-
     private JwtProvider tokenProvider;
-
-
     private UserRepository userRepository;
+
+    public JwtAuthTokenFilter(JwtProvider tokenProvider, UserRepository userRepository) {
+        this.tokenProvider = tokenProvider;
+        this.userRepository = userRepository;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
