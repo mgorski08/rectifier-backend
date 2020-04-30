@@ -24,7 +24,7 @@ import java.util.Set;
 @RequestMapping("/auth")
 @RestController
 @CrossOrigin
-public class AuthRESTController {
+public class AuthController {
     private static final long JWT_EXPIRATION = 3600000; //milliseconds
 
     AuthenticationManager authenticationManager;
@@ -32,10 +32,10 @@ public class AuthRESTController {
     PasswordEncoder passwordEncoder;
     JwtProvider jwtProvider;
 
-    public AuthRESTController(AuthenticationManager authenticationManager,
-                              UserRepository userRepository,
-                              PasswordEncoder passwordEncoder,
-                              JwtProvider jwtProvider) {
+    public AuthController(AuthenticationManager authenticationManager,
+                          UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtProvider jwtProvider) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;

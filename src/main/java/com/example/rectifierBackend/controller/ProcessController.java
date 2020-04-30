@@ -18,6 +18,11 @@ public class ProcessController {
         this.processRepository = processRepository;
     }
 
+    @GetMapping("")
+    ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(processRepository.findAll());
+    }
+
     @GetMapping("{processId}")
     ResponseEntity<?> getOne(@PathVariable long processId) {
         Process process = processRepository.findById(processId);

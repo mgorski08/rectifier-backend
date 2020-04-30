@@ -19,6 +19,11 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
+    @GetMapping("")
+    ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
+
     @GetMapping("{userId}")
     ResponseEntity<?> getOne(@PathVariable long userId) {
         User user = userRepository.findById(userId);

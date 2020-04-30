@@ -18,6 +18,11 @@ public class ClientController {
         this.clientRepository = clientRepository;
     }
 
+    @GetMapping("")
+    ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(clientRepository.findAll());
+    }
+
     @GetMapping("{clientId}")
     ResponseEntity<?> getOne(@PathVariable long clientId) {
         Client client = clientRepository.findById(clientId);
