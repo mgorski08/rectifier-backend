@@ -65,7 +65,7 @@ public class ProcessController {
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bath not found.")
                 );
-        if(bath.getUser().getId() != user.getId()) {
+        if(bath.getUser() == null || bath.getUser().getId() != user.getId()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bath not occupied by current user");
         }
         Process process = new Process();
@@ -87,7 +87,7 @@ public class ProcessController {
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Process not found.")
                 );
-        if(process.getOperator().getId() != user.getId()) {
+        if(process.getOperator() == null || process.getOperator().getId() != user.getId()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Process not started by current user");
         }
         rectifierService.stopProcess(processId);
