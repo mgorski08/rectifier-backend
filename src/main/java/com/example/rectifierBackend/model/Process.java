@@ -64,4 +64,12 @@ public class Process {
     public void setOperator(User operator) {
         this.operator = operator;
     }
+
+    public Timestamp getStopTimestamp() {
+        return stopTimestamp;
+    }
+
+    public void setStopTimestamp(Timestamp stopTimestamp) {
+        this.stopTimestamp = stopTimestamp;
+    }
 }

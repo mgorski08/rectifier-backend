@@ -41,7 +41,7 @@ public class RectifierService {
         Process process = processRepository
                 .findById(processId)
                 .orElseThrow(
-                        () -> {return new RuntimeException("Process doesn't exist.");}
+                        () -> new RuntimeException("Process doesn't exist.")
                 );
         ScheduledFuture<?> scheduledFuture =
                 taskScheduler.scheduleAtFixedRate(() -> {
@@ -60,7 +60,14 @@ public class RectifierService {
     }
 
     public void stopProcess(long processId) {
+        Process process = processRepository
+                .findById(processId)
+                .orElseThrow(
+                        () -> new RuntimeException("Process doesn't exist.")
+                );
         ScheduledFuture<?> scheduledFuture = runningProcesses.get(processId);
+        process.setStopTimestamp(new Timestamp(System.currentTimeMillis()));
+        processRepository.save(process);
         scheduledFuture.cancel(false);
     }
 
