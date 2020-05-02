@@ -1,12 +1,13 @@
 package com.example.rectifierBackend.controller;
 
-import com.example.rectifierBackend.message.response.ResponseMessage;
 import com.example.rectifierBackend.model.User;
 import com.example.rectifierBackend.repository.UserRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RequestMapping("/user")
 @RestController
@@ -26,12 +27,11 @@ public class UserController {
 
     @GetMapping("{userId}")
     ResponseEntity<?> getOne(@PathVariable long userId) {
-        User user = userRepository.findById(userId);
-        if(user == null) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseMessage("User not found."));
-        }
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.")
+                );
         return ResponseEntity.ok(user);
     }
 
@@ -47,7 +47,11 @@ public class UserController {
 
     @DeleteMapping("{userId}")
     ResponseEntity<?> delete(@PathVariable long userId) {
-        userRepository.deleteById(userId);
+        try {
+            userRepository.deleteById(userId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
         return ResponseEntity.noContent().build();
     }
 }

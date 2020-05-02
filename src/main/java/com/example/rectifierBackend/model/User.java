@@ -2,15 +2,15 @@ package com.example.rectifierBackend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -113,4 +113,17 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public static Optional<User> getCurrentUser() {
+        Object possiblyCurrentUser = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        if(possiblyCurrentUser instanceof User) {
+            return Optional.of((User) possiblyCurrentUser);
+        } else {
+            return Optional.empty();
+        }
+    }
+
 }

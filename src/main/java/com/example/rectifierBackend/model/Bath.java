@@ -1,7 +1,5 @@
 package com.example.rectifierBackend.model;
 
-import org.springframework.lang.Nullable;
-
 import javax.persistence.*;
 
 @Entity

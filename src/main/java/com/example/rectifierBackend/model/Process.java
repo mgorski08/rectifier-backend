@@ -20,6 +20,8 @@ public class Process {
 
     private Timestamp startTimestamp;
 
+    private Timestamp stopTimestamp;
+
     @ManyToOne
     private User operator;
 

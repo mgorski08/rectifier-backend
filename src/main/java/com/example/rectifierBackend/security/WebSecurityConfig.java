@@ -4,7 +4,6 @@ import com.example.rectifierBackend.repository.UserRepository;
 import com.example.rectifierBackend.security.jwt.JwtAuthEntryPoint;
 import com.example.rectifierBackend.security.jwt.JwtAuthTokenFilter;
 import com.example.rectifierBackend.security.jwt.JwtProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

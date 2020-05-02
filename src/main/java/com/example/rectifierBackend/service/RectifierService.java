@@ -2,6 +2,7 @@ package com.example.rectifierBackend.service;
 
 import com.example.rectifierBackend.model.Process;
 import com.example.rectifierBackend.model.Sample;
+import com.example.rectifierBackend.repository.ProcessRepository;
 import com.example.rectifierBackend.repository.SampleRepository;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -13,24 +14,35 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ScheduledFuture;
 
 @Service
 public class RectifierService {
     private static final long SAMPLE_RATE_MS = 2000;
     Random random = new Random();
-    Map<Process, ScheduledFuture<?>> runningProcesses = new HashMap<>();
+    Map<Long, ScheduledFuture<?>> runningProcesses = new HashMap<>();
     TaskScheduler taskScheduler;
     SampleRepository sampleRepository;
+    ProcessRepository processRepository;
 
     @Autowired
-    RectifierService(TaskScheduler taskScheduler, SampleRepository sampleRepository) {
+    RectifierService(TaskScheduler taskScheduler,
+                     SampleRepository sampleRepository,
+                     ProcessRepository processRepository) {
         this.taskScheduler = taskScheduler;
         this.sampleRepository = sampleRepository;
+        this.processRepository = processRepository;
     }
 
-    public void startProcess(Process process) {
+    public void startProcess(long processId) {
+        Process process = processRepository
+                .findById(processId)
+                .orElseThrow(
+                        () -> {return new RuntimeException("Process doesn't exist.");}
+                );
         ScheduledFuture<?> scheduledFuture =
                 taskScheduler.scheduleAtFixedRate(() -> {
                     /*
@@ -42,7 +54,14 @@ public class RectifierService {
                     sample.setProcess(process);
                     sampleRepository.save(sample);
                 }, SAMPLE_RATE_MS);
+        runningProcesses.put(processId, scheduledFuture);
+        process.setStartTimestamp(new Timestamp(System.currentTimeMillis()));
+        processRepository.save(process);
+    }
 
+    public void stopProcess(long processId) {
+        ScheduledFuture<?> scheduledFuture = runningProcesses.get(processId);
+        scheduledFuture.cancel(false);
     }
 
     public Sample sampleBath(long bathId) {
