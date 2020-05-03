@@ -44,7 +44,7 @@ public class ElementController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("add")
+    @PostMapping("")
     ResponseEntity<?> add(@RequestBody Element element) {
         elementRepository.save(element);
         return ResponseEntity.ok(element);

@@ -49,10 +49,15 @@ public class ProcessController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("add")
+    @PostMapping("")
     ResponseEntity<?> add(@RequestBody Process process) {
         processRepository.save(process);
         return ResponseEntity.ok(process);
+    }
+
+    @GetMapping("")
+    ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(processRepository.findAll());
     }
 
     @PostMapping("/start")

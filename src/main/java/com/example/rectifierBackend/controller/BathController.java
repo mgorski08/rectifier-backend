@@ -78,7 +78,7 @@ public class BathController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("add")
+    @PostMapping("")
     ResponseEntity<?> add(@RequestBody Bath bath) {
         bathRepository.save(bath);
         return ResponseEntity.ok(bath);

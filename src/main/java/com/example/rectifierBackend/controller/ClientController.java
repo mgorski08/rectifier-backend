@@ -44,7 +44,7 @@ public class ClientController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("add")
+    @PostMapping("")
     ResponseEntity<?> add(@RequestBody Client client) {
         clientRepository.save(client);
         return new ResponseEntity<>(client, HttpStatus.OK);

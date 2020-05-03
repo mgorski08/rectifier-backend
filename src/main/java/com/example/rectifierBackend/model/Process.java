@@ -25,6 +25,9 @@ public class Process {
     @ManyToOne
     private User operator;
 
+    @ManyToOne
+    private Order order;
+
     public Bath getBath() {
         return bath;
     }
@@ -71,5 +74,13 @@ public class Process {
 
     public void setStopTimestamp(Timestamp stopTimestamp) {
         this.stopTimestamp = stopTimestamp;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
     }
 }
