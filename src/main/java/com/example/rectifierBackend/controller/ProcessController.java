@@ -6,6 +6,7 @@ import com.example.rectifierBackend.model.Process;
 import com.example.rectifierBackend.model.User;
 import com.example.rectifierBackend.repository.BathRepository;
 import com.example.rectifierBackend.repository.ProcessRepository;
+import com.example.rectifierBackend.repository.SampleRepository;
 import com.example.rectifierBackend.service.RectifierService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,13 +24,16 @@ public class ProcessController {
 
     ProcessRepository processRepository;
     BathRepository bathRepository;
+    SampleRepository sampleRepository;
     RectifierService rectifierService;
 
     public ProcessController(ProcessRepository processRepository,
                              BathRepository bathRepository,
+                             SampleRepository sampleRepository,
                              RectifierService rectifierService) {
         this.processRepository = processRepository;
         this.bathRepository = bathRepository;
+        this.sampleRepository = sampleRepository;
         this.rectifierService = rectifierService;
     }
 
@@ -41,6 +45,13 @@ public class ProcessController {
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Process not found.")
                 );
         return ResponseEntity.ok(process);
+    }
+
+    @GetMapping("{processId}/samples")
+    ResponseEntity<?> getSamples(@PathVariable long processId) {
+        return ResponseEntity.ok(sampleRepository
+                .findAllByProcessIdOrderByTimestampAsc(processId)
+        );
     }
 
     @DeleteMapping("{processId}")

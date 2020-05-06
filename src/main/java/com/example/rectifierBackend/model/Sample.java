@@ -1,5 +1,7 @@
 package com.example.rectifierBackend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -11,6 +13,7 @@ public class Sample {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
 
+    @JsonIgnore
     @ManyToOne
     private Process process;
 

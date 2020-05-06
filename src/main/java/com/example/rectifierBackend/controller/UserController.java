@@ -5,7 +5,6 @@ import com.example.rectifierBackend.repository.UserRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -37,12 +36,9 @@ public class UserController {
 
     @GetMapping("/current")
     ResponseEntity<?> getCurrent() {
-        return ResponseEntity
-                .ok(SecurityContextHolder
-                        .getContext()
-                        .getAuthentication()
-                        .getPrincipal()
-                );
+        return ResponseEntity.ok(User.getCurrentUser().orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        ));
     }
 
     @DeleteMapping("{userId}")

@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface BathRepository extends JpaRepository<Bath, Long> {
     Optional<Bath> findById(long id);
     List<Bath> findAll();
+    List<Bath> findAllByOrderByIdAsc();
     Bath save(Bath bath);
     long deleteById(long id);
 }

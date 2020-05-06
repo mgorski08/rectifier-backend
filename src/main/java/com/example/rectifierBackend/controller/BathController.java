@@ -39,7 +39,7 @@ public class BathController {
 
     @GetMapping("")
     ResponseEntity<?> getAll() {
-        return ResponseEntity.ok(bathRepository.findAll());
+        return ResponseEntity.ok(bathRepository.findAllByOrderByIdAsc());
     }
 
     @DeleteMapping("{bathId}")
