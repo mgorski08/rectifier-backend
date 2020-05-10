@@ -90,9 +90,9 @@ public class RectifierService {
             sample.setCurrent(15 + random.nextGaussian());
             sample.setVoltage(12 + random.nextGaussian());
             sample.setTimestamp(new Timestamp(System.currentTimeMillis()));
-            jsonGenerator.writeRaw("message:");
+            jsonGenerator.writeRaw("data:");
             jsonGenerator.writeObject(sample);
-            jsonGenerator.writeRaw("\n\n");
+            jsonGenerator.writeRaw("\n\n\n");
             jsonGenerator.flush();
             try {
                 Thread.sleep(1000);
