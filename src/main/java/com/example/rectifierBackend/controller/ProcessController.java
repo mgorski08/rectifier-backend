@@ -1,5 +1,6 @@
 package com.example.rectifierBackend.controller;
 
+import com.example.rectifierBackend.event.SampleCreatedEvent;
 import com.example.rectifierBackend.message.request.ProcessForm;
 import com.example.rectifierBackend.model.Bath;
 import com.example.rectifierBackend.model.Process;
@@ -8,14 +9,20 @@ import com.example.rectifierBackend.repository.BathRepository;
 import com.example.rectifierBackend.repository.ProcessRepository;
 import com.example.rectifierBackend.repository.SampleRepository;
 import com.example.rectifierBackend.service.RectifierService;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import reactor.core.publisher.Flux;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.time.Duration;
+import java.time.LocalTime;
 
 @RequestMapping("/process")
 @RestController
@@ -110,10 +117,10 @@ public class ProcessController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping(value = "/testStream", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<StreamingResponseBody> testStream() {
-        StreamingResponseBody responseBody = (OutputStream stream) -> {
-            rectifierService.writeSamples(stream, null);
+    @GetMapping(value = "/{processId}/liveSamples", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<StreamingResponseBody> liveSamples(@PathVariable long processId) {
+        StreamingResponseBody responseBody = (OutputStream outputStream) -> {
+            rectifierService.writeSamples(outputStream, processId);
         };
         return ResponseEntity.ok(responseBody);
     }
