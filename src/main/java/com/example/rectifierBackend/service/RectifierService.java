@@ -92,6 +92,7 @@ public class RectifierService {
             sample.setTimestamp(new Timestamp(System.currentTimeMillis()));
             jsonGenerator.writeRaw("message:");
             jsonGenerator.writeObject(sample);
+            jsonGenerator.writeRaw("\n\n");
             jsonGenerator.flush();
             try {
                 Thread.sleep(1000);
