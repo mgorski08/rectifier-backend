@@ -1,6 +1,5 @@
 package com.example.rectifierBackend.service;
 
-import com.example.rectifierBackend.event.SampleCreatedEvent;
 import com.example.rectifierBackend.model.Process;
 import com.example.rectifierBackend.model.Sample;
 import com.example.rectifierBackend.repository.ProcessRepository;
@@ -16,9 +15,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 
 @Service
@@ -29,7 +28,7 @@ public class RectifierService {
     private final TaskScheduler taskScheduler;
     private final SampleRepository sampleRepository;
     private final ProcessRepository processRepository;
-    private final ApplicationEventPublisher applicationEventPublisher;
+    private final Set<BlockingQueue<Sample>> blockingQueueSet = new HashSet<>();
 
     @Autowired
     RectifierService(TaskScheduler taskScheduler,
@@ -39,7 +38,6 @@ public class RectifierService {
         this.taskScheduler = taskScheduler;
         this.sampleRepository = sampleRepository;
         this.processRepository = processRepository;
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public void startProcess(long processId) {
@@ -53,7 +51,9 @@ public class RectifierService {
                     Sample sample = sampleBath(process.getBath().getId());
                     sample.setProcess(process);
                     sampleRepository.save(sample);
-                    applicationEventPublisher.publishEvent(new SampleCreatedEvent(this, sample));
+                    for(BlockingQueue<Sample> queue : blockingQueueSet) {
+                        queue.add(sample);
+                    }
                 }, SAMPLE_RATE_MS);
         runningProcesses.put(processId, scheduledFuture);
         process.setStartTimestamp(new Timestamp(System.currentTimeMillis()));
@@ -83,23 +83,17 @@ public class RectifierService {
     public void writeSamples(OutputStream outputStream, long processId) throws IOException {
         JsonGenerator jsonGenerator = new JsonFactory().createGenerator(outputStream);
         jsonGenerator.setCodec(new ObjectMapper());
-        Process process = processRepository.getOne(processId);
-        for (;;) {
-            Sample sample = new Sample();
-            sample.setProcess(process);
-            sample.setCurrent(15 + random.nextGaussian());
-            sample.setVoltage(12 + random.nextGaussian());
-            sample.setTimestamp(new Timestamp(System.currentTimeMillis()));
-            jsonGenerator.writeRaw("data:");
-            jsonGenerator.writeObject(sample);
-            jsonGenerator.flush();
+        BlockingQueue<Sample> blockingQueue = new LinkedBlockingQueue<>();
+        blockingQueueSet.add(blockingQueue);
+        Sample sample;
+        do {
             try {
-                Thread.sleep(1000);
+                sample = blockingQueue.take();
+                jsonGenerator.writeRaw("data:");
+                jsonGenerator.writeObject(sample);
+                jsonGenerator.flush();
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
-        }
-        //jsonGenerator.close();
+        } while(true);
     }
-
 }
