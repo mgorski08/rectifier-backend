@@ -14,7 +14,7 @@ public class Process {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
 
-    @OneToOne
+    @ManyToOne
     @NotNull
     @JsonIgnore
     private Bath bath;

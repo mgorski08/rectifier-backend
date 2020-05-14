@@ -86,9 +86,11 @@ public class ProcessController {
         }
         Process process = new Process();
         process.setBath(bath);
+        bath.setProcess(process);
         process.setDescription(processForm.getDescription());
         process.setOperator(user);
         processRepository.save(process);
+        bathRepository.save(bath);
         rectifierService.startProcess(process.getId());
         return ResponseEntity.ok(process);
     }
@@ -98,15 +100,23 @@ public class ProcessController {
         User user = User.getCurrentUser().orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED)
         );
+
         Process process = processRepository
                 .findById(processId)
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Process not found.")
                 );
+        Bath bath = bathRepository
+                .findById(process.getBath().getId())
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bath not found.")
+                );
         if(process.getOperator() == null || process.getOperator().getId() != user.getId()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Process not started by current user");
         }
         rectifierService.stopProcess(processId);
+        bath.setProcess(null);
+        bathRepository.save(bath);
         return ResponseEntity.noContent().build();
     }
 
