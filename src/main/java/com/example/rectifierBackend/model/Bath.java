@@ -12,6 +12,9 @@ public class Bath {
     @ManyToOne
     private User user;
 
+    @OneToOne
+    private Process process;
+
     private double minVoltage;
     private double maxVoltage;
     private double minCurrent;
@@ -99,5 +102,13 @@ public class Bath {
 
     public void setMaxTime(double maxTime) {
         this.maxTime = maxTime;
+    }
+
+    public Process getProcess() {
+        return process;
+    }
+
+    public void setProcess(Process process) {
+        this.process = process;
     }
 }

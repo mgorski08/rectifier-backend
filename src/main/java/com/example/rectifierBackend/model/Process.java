@@ -1,5 +1,7 @@
 package com.example.rectifierBackend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
@@ -14,6 +16,7 @@ public class Process {
 
     @OneToOne
     @NotNull
+    @JsonIgnore
     private Bath bath;
 
     private String description;
