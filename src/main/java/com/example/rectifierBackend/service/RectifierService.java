@@ -28,7 +28,7 @@ public class RectifierService {
     private final TaskScheduler taskScheduler;
     private final SampleRepository sampleRepository;
     private final ProcessRepository processRepository;
-    private final Set<BlockingQueue<Sample>> blockingQueueSet = new HashSet<>();
+    private final Set<BlockingQueue<Optional<Sample>>> blockingQueueSet = new HashSet<>();
 
     @Autowired
     RectifierService(TaskScheduler taskScheduler,
@@ -51,8 +51,8 @@ public class RectifierService {
                     Sample sample = sampleBath(process.getBath().getId());
                     sample.setProcess(process);
                     sampleRepository.save(sample);
-                    for(BlockingQueue<Sample> queue : blockingQueueSet) {
-                        queue.add(sample);
+                    for(BlockingQueue<Optional<Sample>> queue : blockingQueueSet) {
+                        queue.add(Optional.of(sample));
                     }
                 }, SAMPLE_RATE_MS);
         runningProcesses.put(processId, scheduledFuture);
@@ -83,17 +83,24 @@ public class RectifierService {
     public void writeSamples(OutputStream outputStream, long processId) throws IOException {
         JsonGenerator jsonGenerator = new JsonFactory().createGenerator(outputStream);
         jsonGenerator.setCodec(new ObjectMapper());
-        BlockingQueue<Sample> blockingQueue = new LinkedBlockingQueue<>();
+        BlockingQueue<Optional<Sample>> blockingQueue = new LinkedBlockingQueue<>();
         blockingQueueSet.add(blockingQueue);
         Sample sample;
         do {
             try {
-                sample = blockingQueue.take();
-                jsonGenerator.writeRaw("data:");
-                jsonGenerator.writeObject(sample);
-                jsonGenerator.flush();
-            } catch (InterruptedException e) {
+                sample = blockingQueue.take().orElse(null);
+                if(sample == null) break;
+                if(sample.getProcess().getId() == processId) {
+                    try {
+                        jsonGenerator.writeRaw("data:");
+                        jsonGenerator.writeObject(sample);
+                        jsonGenerator.flush();
+                    } catch (IOException e) {
+                        break;
+                    }
+                }
+            } catch (InterruptedException ignored) {
             }
-        } while(true);
+        } while (true);
     }
 }
