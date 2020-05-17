@@ -1,4 +1,4 @@
-package com.example.rectifierBackend.security;
+package com.example.rectifierBackend.config;
 
 import com.example.rectifierBackend.repository.UserRepository;
 import com.example.rectifierBackend.security.jwt.JwtAuthEntryPoint;

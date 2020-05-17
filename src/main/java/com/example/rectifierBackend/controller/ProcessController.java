@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 @RequestMapping("/process")
@@ -123,7 +124,11 @@ public class ProcessController {
     @GetMapping(value = "/{processId}/liveSamples", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<StreamingResponseBody> liveSamples(@PathVariable long processId) {
         StreamingResponseBody responseBody = (OutputStream outputStream) -> {
-            rectifierService.writeSamples(outputStream, processId);
+            try {
+                rectifierService.writeSamples(outputStream, processId);
+            } catch(Exception e) {
+                ;
+            }
         };
         return ResponseEntity.ok(responseBody);
     }

@@ -69,7 +69,7 @@ public class RectifierService {
         ScheduledFuture<?> scheduledFuture = runningProcesses.get(processId);
         process.setStopTimestamp(new Timestamp(System.currentTimeMillis()));
         processRepository.save(process);
-        scheduledFuture.cancel(false);
+        if(scheduledFuture != null) scheduledFuture.cancel(false);
     }
 
     public Sample sampleBath(long bathId) {
@@ -94,6 +94,7 @@ public class RectifierService {
                     try {
                         jsonGenerator.writeRaw("data:");
                         jsonGenerator.writeObject(sample);
+                        jsonGenerator.writeRaw("\n\n");
                         jsonGenerator.flush();
                     } catch (IOException e) {
                         break;
