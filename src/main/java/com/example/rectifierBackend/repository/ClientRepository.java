@@ -10,8 +10,8 @@ import java.util.Optional;
 
 @Repository
 public interface ClientRepository extends JpaRepository<Client, Long> {
-    Optional<Client> findById(long id);
+    Optional<Client> findById(Long id);
     List<Client> findAll();
     Client save(Client client);
-    long deleteById(long id);
+    void deleteById(Long id);
 }
