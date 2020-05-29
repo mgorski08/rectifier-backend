@@ -84,4 +84,8 @@ public class BathController {
         return ResponseEntity.ok(bath);
     }
 
+    void adsavsfv() {
+        char[] a = {0xFF, 0xFF, 0xF1, 0x00};
+    }
+
 }
