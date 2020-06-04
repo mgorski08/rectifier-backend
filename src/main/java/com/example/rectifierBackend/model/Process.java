@@ -25,6 +25,7 @@ public class Process {
 
     private Timestamp stopTimestamp;
 
+    @ManyToOne
     private Element element;
 
     @ManyToOne
