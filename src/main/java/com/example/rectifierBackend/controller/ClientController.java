@@ -13,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 @CrossOrigin
 public class ClientController {
 
-    ClientRepository clientRepository;
+    private final ClientRepository clientRepository;
 
     public ClientController(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;

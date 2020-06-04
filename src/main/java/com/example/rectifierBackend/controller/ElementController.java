@@ -13,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 @CrossOrigin
 public class ElementController {
 
-    ElementRepository elementRepository;
+    private final ElementRepository elementRepository;
 
     public ElementController(ElementRepository elementRepository) {
         this.elementRepository = elementRepository;

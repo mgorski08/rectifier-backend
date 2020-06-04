@@ -5,6 +5,7 @@ import com.example.rectifierBackend.model.User;
 import com.example.rectifierBackend.repository.BathRepository;
 import com.example.rectifierBackend.repository.ProcessRepository;
 import com.example.rectifierBackend.repository.UserRepository;
+import com.fazecast.jSerialComm.SerialPort;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,16 +16,11 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @CrossOrigin
 public class BathController {
-    ProcessRepository processRepository;
-    BathRepository bathRepository;
-    UserRepository userRepository;
 
-    public BathController(ProcessRepository processRepository,
-                          BathRepository bathRepository,
-                          UserRepository userRepository) {
-        this.processRepository = processRepository;
+    private final BathRepository bathRepository;
+
+    public BathController(BathRepository bathRepository) {
         this.bathRepository = bathRepository;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("{bathId}")
@@ -84,8 +80,11 @@ public class BathController {
         return ResponseEntity.ok(bath);
     }
 
-    void adsavsfv() {
+    @GetMapping("testPorts")
+    ResponseEntity<?> testPorts() {
         char[] a = {0xFF, 0xFF, 0xF1, 0x00};
+        SerialPort serialPort = SerialPort.getCommPort("/dev/ttyr0");
+        return ResponseEntity.ok(serialPort.getPortDescription());
     }
 
 }

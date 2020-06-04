@@ -25,6 +25,8 @@ public class Process {
 
     private Timestamp stopTimestamp;
 
+    private Element element;
+
     @ManyToOne
     private User operator;
 
@@ -77,6 +79,14 @@ public class Process {
 
     public void setStopTimestamp(Timestamp stopTimestamp) {
         this.stopTimestamp = stopTimestamp;
+    }
+
+    public Element getElement() {
+        return element;
+    }
+
+    public void setElement(Element element) {
+        this.element = element;
     }
 
     public Order getOrder() {

@@ -27,18 +27,12 @@ import java.util.Set;
 public class AuthController {
     private static final long JWT_EXPIRATION = 3600000; //milliseconds
 
-    AuthenticationManager authenticationManager;
-    UserRepository userRepository;
-    PasswordEncoder passwordEncoder;
-    JwtProvider jwtProvider;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
 
     public AuthController(AuthenticationManager authenticationManager,
-                          UserRepository userRepository,
-                          PasswordEncoder passwordEncoder,
                           JwtProvider jwtProvider) {
         this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
     }
 
@@ -56,27 +50,6 @@ public class AuthController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), exp, userDetails.getAuthorities()));
-    }
-
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpForm signUpRequest) {
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new ResponseMessage("Fail -> Username is already taken."));
-        }
-        // Create user account
-        User user = new User(signUpRequest.getUsername(), passwordEncoder.encode(signUpRequest.getPassword()));
-
-        Set<String> strRoles = signUpRequest.getRoles();
-
-        user.setFirstName(signUpRequest.getFirstName());
-        user.setLastName(signUpRequest.getLastName());
-        user.setRoles(strRoles);
-        userRepository.save(user);
-
-        return new ResponseEntity<>(new ResponseMessage("User registered successfully."), HttpStatus.OK);
-
     }
 
 }

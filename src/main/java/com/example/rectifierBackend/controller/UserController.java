@@ -1,22 +1,30 @@
 package com.example.rectifierBackend.controller;
 
+import com.example.rectifierBackend.message.request.SignUpForm;
+import com.example.rectifierBackend.message.response.ResponseMessage;
 import com.example.rectifierBackend.model.User;
 import com.example.rectifierBackend.repository.UserRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import javax.validation.Valid;
+import java.util.Set;
 
 @RequestMapping("/user")
 @RestController
 @CrossOrigin
 public class UserController {
 
-    UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("")
@@ -34,11 +42,29 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/current")
+    @GetMapping("current")
     ResponseEntity<?> getCurrent() {
         return ResponseEntity.ok(User.getCurrentUser().orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED)
         ));
+    }
+
+    @PostMapping("")
+    ResponseEntity<?> addUser(@Valid @RequestBody SignUpForm signUpForm) {
+        if (userRepository.existsByUsername(signUpForm.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is already taken.");
+        }
+        User user = new User(signUpForm.getUsername(), passwordEncoder.encode(signUpForm.getPassword()));
+
+        Set<String> strRoles = signUpForm.getRoles();
+
+        user.setFirstName(signUpForm.getFirstName());
+        user.setLastName(signUpForm.getLastName());
+        user.setRoles(strRoles);
+        userRepository.save(user);
+
+        return new ResponseEntity<>(new ResponseMessage("User registered successfully."), HttpStatus.OK);
+
     }
 
     @DeleteMapping("{userId}")

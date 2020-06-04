@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 @CrossOrigin
 public class OrderController {
 
-    OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
 
     public OrderController(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;

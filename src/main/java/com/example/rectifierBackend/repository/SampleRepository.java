@@ -9,9 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface SampleRepository extends JpaRepository<Sample, Long> {
-    Optional<Sample> findById(long id);
+    Optional<Sample> findById(Long id);
     List<Sample> findAll();
-    List<Sample> findAllByProcessIdOrderByTimestampAsc(long processId);
+    List<Sample> findAllByProcessIdOrderByTimestampAsc(Long processId);
     Sample save(Sample sample);
-    long deleteById(long id);
+    void deleteById(Long id);
 }

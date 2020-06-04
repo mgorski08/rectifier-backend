@@ -8,6 +8,9 @@ import com.example.rectifierBackend.repository.BathRepository;
 import com.example.rectifierBackend.repository.ProcessRepository;
 import com.example.rectifierBackend.repository.SampleRepository;
 import com.example.rectifierBackend.service.RectifierService;
+import com.lowagie.text.Document;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +26,10 @@ import java.io.OutputStream;
 @CrossOrigin
 public class ProcessController {
 
-    ProcessRepository processRepository;
-    BathRepository bathRepository;
-    SampleRepository sampleRepository;
-    RectifierService rectifierService;
+    private final ProcessRepository processRepository;
+    private final BathRepository bathRepository;
+    private final SampleRepository sampleRepository;
+    private final RectifierService rectifierService;
 
     public ProcessController(ProcessRepository processRepository,
                              BathRepository bathRepository,
@@ -129,6 +132,24 @@ public class ProcessController {
             } catch(Exception e) {
                 ;
             }
+        };
+        return ResponseEntity.ok(responseBody);
+    }
+
+    @GetMapping(value = "{processId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
+    ResponseEntity<StreamingResponseBody> testReport(@PathVariable long processId) {
+        Process process = processRepository.findById(processId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Process not found.")
+        );
+        StreamingResponseBody responseBody = (OutputStream outputStream) -> {
+            Document document = new Document();
+            PdfWriter.getInstance(document, outputStream);
+            document.open();
+            document.add(new Paragraph("Id: " + process.getId()));
+            document.add(new Paragraph("Opis: " + process.getDescription()));
+            document.add(new Paragraph("Początek: " + process.getStartTimestamp()));
+            document.add(new Paragraph("Koniec: " + process.getStopTimestamp()));
+            document.close();
         };
         return ResponseEntity.ok(responseBody);
     }

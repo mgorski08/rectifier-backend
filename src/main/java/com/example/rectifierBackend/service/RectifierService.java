@@ -1,5 +1,6 @@
 package com.example.rectifierBackend.service;
 
+import com.example.rectifierBackend.driver.RectifierDriver;
 import com.example.rectifierBackend.model.Process;
 import com.example.rectifierBackend.model.Sample;
 import com.example.rectifierBackend.repository.ProcessRepository;
@@ -8,7 +9,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -23,21 +24,22 @@ import java.util.concurrent.ScheduledFuture;
 @Service
 public class RectifierService {
     private static final long SAMPLE_RATE_MS = 2000;
-    private final Random random = new Random();
     private final Map<Long, ScheduledFuture<?>> runningProcesses = new HashMap<>();
     private final TaskScheduler taskScheduler;
     private final SampleRepository sampleRepository;
     private final ProcessRepository processRepository;
+    private final RectifierDriver rectifierDriver;
     private final Set<BlockingQueue<Optional<Sample>>> blockingQueueSet = new HashSet<>();
 
     @Autowired
     RectifierService(TaskScheduler taskScheduler,
                      SampleRepository sampleRepository,
                      ProcessRepository processRepository,
-                     ApplicationEventPublisher applicationEventPublisher) {
+                     @Qualifier("mockDriver") RectifierDriver rectifierDriver) {
         this.taskScheduler = taskScheduler;
         this.sampleRepository = sampleRepository;
         this.processRepository = processRepository;
+        this.rectifierDriver = rectifierDriver;
     }
 
     public void startProcess(long processId) {
@@ -48,7 +50,7 @@ public class RectifierService {
                 );
         ScheduledFuture<?> scheduledFuture =
                 taskScheduler.scheduleAtFixedRate(() -> {
-                    Sample sample = sampleBath(process.getBath().getId());
+                    Sample sample = rectifierDriver.readSample(process.getBath().getId());
                     sample.setProcess(process);
                     sampleRepository.save(sample);
                     for(BlockingQueue<Optional<Sample>> queue : blockingQueueSet) {
@@ -70,14 +72,6 @@ public class RectifierService {
         process.setStopTimestamp(new Timestamp(System.currentTimeMillis()));
         processRepository.save(process);
         if(scheduledFuture != null) scheduledFuture.cancel(false);
-    }
-
-    public Sample sampleBath(long bathId) {
-        Sample sample = new Sample();
-        sample.setCurrent(15 + random.nextGaussian());
-        sample.setVoltage(12 + random.nextGaussian());
-        sample.setTimestamp(new Timestamp(System.currentTimeMillis()));
-        return sample;
     }
 
     public void writeSamples(OutputStream outputStream, long processId) throws IOException {
