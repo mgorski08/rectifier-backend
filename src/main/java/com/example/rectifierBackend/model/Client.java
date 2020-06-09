@@ -1,6 +1,7 @@
 package com.example.rectifierBackend.model;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "client")
@@ -11,12 +12,19 @@ public class Client {
     private long id;
 
     private String companyName;
+
     private String nip;
+
     private String address;
+
     private String city;
+
     private String zipCode;
+
     private String phoneNumber;
+
     private String email;
+
 
     public long getId() {
         return id;

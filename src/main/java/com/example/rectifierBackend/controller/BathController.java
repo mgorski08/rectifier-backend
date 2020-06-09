@@ -69,6 +69,12 @@ public class BathController {
         Bath bath = bathRepository.findById(bathId).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bath not found.")
         );
+        if(bath.getProcess() != null) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Cannot free bath, when a process is running"
+            );
+        }
         bath.setUser(null);
         bathRepository.save(bath);
         return ResponseEntity.noContent().build();
