@@ -88,6 +88,9 @@ public class ProcessController {
         if(bath.getUser() == null || bath.getUser().getId() != user.getId()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bath not occupied by current user");
         }
+        if(bath.getProcess() != null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A process is already started for this bath");
+        }
         Process process = new Process();
         process.setBath(bath);
         bath.setProcess(process);
