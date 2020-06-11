@@ -11,6 +11,8 @@ import com.example.rectifierBackend.service.RectifierService;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -155,6 +157,12 @@ public class ProcessController {
             document.close();
         };
         return ResponseEntity.ok(responseBody);
+    }
+
+    @ExceptionHandler(IOException.class)
+    public void exceptionHandler(IOException e) {
+        Log logger = LogFactory.getLog(getClass());
+        logger.debug("", e);
     }
 
 }

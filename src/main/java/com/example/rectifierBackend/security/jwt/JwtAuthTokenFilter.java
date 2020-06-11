@@ -15,8 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class JwtAuthTokenFilter extends OncePerRequestFilter {
-    private JwtProvider tokenProvider;
-    private UserRepository userRepository;
+    private final JwtProvider tokenProvider;
+    private final UserRepository userRepository;
 
     public JwtAuthTokenFilter(JwtProvider tokenProvider, UserRepository userRepository) {
         this.tokenProvider = tokenProvider;
