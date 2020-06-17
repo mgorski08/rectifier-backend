@@ -160,6 +160,7 @@ public class ProcessController {
     }
 
     @ExceptionHandler(IOException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public void exceptionHandler(IOException e) {
         Log logger = LogFactory.getLog(getClass());
         logger.debug("", e);
