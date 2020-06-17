@@ -11,6 +11,7 @@ import com.example.rectifierBackend.service.RectifierService;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
@@ -159,7 +160,7 @@ public class ProcessController {
         return ResponseEntity.ok(responseBody);
     }
 
-    @ExceptionHandler(IOException.class)
+    @ExceptionHandler(ClientAbortException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public void exceptionHandler(IOException e) {
         Log logger = LogFactory.getLog(getClass());
