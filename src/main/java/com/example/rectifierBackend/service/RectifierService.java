@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
@@ -32,10 +33,8 @@ public class RectifierService {
     private final Set<BlockingQueue<Optional<Sample>>> blockingQueueSet = new HashSet<>();
 
     @Autowired
-    RectifierService(TaskScheduler taskScheduler,
-                     SampleRepository sampleRepository,
-                     ProcessRepository processRepository,
-                     @Qualifier("mockDriver") RectifierDriver rectifierDriver) {
+    RectifierService(TaskScheduler taskScheduler, SampleRepository sampleRepository,
+                     ProcessRepository processRepository, @Qualifier("mockDriver") RectifierDriver rectifierDriver) {
         this.taskScheduler = taskScheduler;
         this.sampleRepository = sampleRepository;
         this.processRepository = processRepository;
@@ -43,35 +42,30 @@ public class RectifierService {
     }
 
     public void startProcess(long processId) {
-        Process process = processRepository
-                .findById(processId)
-                .orElseThrow(
-                        () -> new RuntimeException("Process doesn't exist.")
-                );
-        ScheduledFuture<?> scheduledFuture =
-                taskScheduler.scheduleAtFixedRate(() -> {
-                    Sample sample = rectifierDriver.readSample(process.getBath().getId());
-                    sample.setProcess(process);
-                    sampleRepository.save(sample);
-                    for(BlockingQueue<Optional<Sample>> queue : blockingQueueSet) {
-                        queue.add(Optional.of(sample));
-                    }
-                }, SAMPLE_RATE_MS);
+        Process process = processRepository.findById(processId).orElseThrow(() -> new RuntimeException("Process " +
+                "doesn't exist."));
+        ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(() -> {
+            Sample sample = rectifierDriver.readSample(process.getBath().getId());
+            sample.setProcess(process);
+            sampleRepository.save(sample);
+            synchronized (blockingQueueSet) {
+                for (BlockingQueue<Optional<Sample>> queue : blockingQueueSet) {
+                    queue.add(Optional.of(sample));
+                }
+            }
+        }, SAMPLE_RATE_MS);
         runningProcesses.put(processId, scheduledFuture);
         process.setStartTimestamp(new Timestamp(System.currentTimeMillis()));
         processRepository.save(process);
     }
 
     public void stopProcess(long processId) {
-        Process process = processRepository
-                .findById(processId)
-                .orElseThrow(
-                        () -> new RuntimeException("Process doesn't exist.")
-                );
+        Process process = processRepository.findById(processId).orElseThrow(() -> new RuntimeException("Process " +
+                "doesn't exist."));
         ScheduledFuture<?> scheduledFuture = runningProcesses.get(processId);
         process.setStopTimestamp(new Timestamp(System.currentTimeMillis()));
         processRepository.save(process);
-        if(scheduledFuture != null) scheduledFuture.cancel(false);
+        if (scheduledFuture != null) scheduledFuture.cancel(false);
     }
 
     public void writeSamples(OutputStream outputStream, long processId) throws IOException {
@@ -80,22 +74,23 @@ public class RectifierService {
         BlockingQueue<Optional<Sample>> blockingQueue = new LinkedBlockingQueue<>();
         blockingQueueSet.add(blockingQueue);
         Sample sample;
-        do {
-            try {
-                sample = blockingQueue.take().orElse(null);
-                if(sample == null) break;
-                if(sample.getProcess().getId() == processId) {
-                    try {
-                        jsonGenerator.writeRaw("data:");
-                        jsonGenerator.writeObject(sample);
-                        jsonGenerator.writeRaw("\n\n");
-                        jsonGenerator.flush();
-                    } catch (IOException e) {
-                        break;
-                    }
+        try {
+            while (true) {
+                try {
+                    sample = blockingQueue.take().orElse(null);
+                } catch (InterruptedException ie) {continue;}
+                if (sample == null) break;
+                if (sample.getProcess().getId() == processId) {
+                    jsonGenerator.writeRaw("data:");
+                    jsonGenerator.writeObject(sample);
+                    jsonGenerator.writeRaw("\n\n");
+                    jsonGenerator.flush();
                 }
-            } catch (InterruptedException ignored) {
             }
-        } while (true);
+        } finally {
+            synchronized (blockingQueueSet) {
+                blockingQueueSet.remove(blockingQueue);
+            }
+        }
     }
 }

@@ -14,6 +14,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,7 @@ public class ProcessController {
     private final BathRepository bathRepository;
     private final SampleRepository sampleRepository;
     private final RectifierService rectifierService;
+    private final Log logger = LogFactory.getLog(getClass());
 
     public ProcessController(ProcessRepository processRepository,
                              BathRepository bathRepository,
@@ -135,11 +137,15 @@ public class ProcessController {
         StreamingResponseBody responseBody = (OutputStream outputStream) -> {
             try {
                 rectifierService.writeSamples(outputStream, processId);
-            } catch(Exception e) {
-                ;
+            } catch (ClientAbortException cae) {
+                logger.info("Client disconnected while streaming.");
+            } catch (Exception e) {
+                logger.error("Error while streaming.", e);
             }
         };
-        return ResponseEntity.ok(responseBody);
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_EVENT_STREAM_VALUE)
+                .body(responseBody);
     }
 
     @GetMapping(value = "{processId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
@@ -158,13 +164,6 @@ public class ProcessController {
             document.close();
         };
         return ResponseEntity.ok(responseBody);
-    }
-
-    @ExceptionHandler(ClientAbortException.class)
-    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-    public void exceptionHandler(IOException e) {
-        Log logger = LogFactory.getLog(getClass());
-        logger.debug(e.getMessage());
     }
 
 }
