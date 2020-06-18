@@ -142,6 +142,7 @@ public class ProcessController {
             } catch (Exception e) {
                 logger.error("Error while streaming.", e);
             }
+            outputStream.close();
         };
         return ResponseEntity.status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_EVENT_STREAM_VALUE)
