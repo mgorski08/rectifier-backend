@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.util.Random;
 
-@Component("mockDriver")
-public class MockDriver implements RectifierDriver {
+@Component("mock")
+public class MockRectifierDriver implements RectifierDriver {
 
     private final Random random = new Random();
 

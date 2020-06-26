@@ -149,6 +149,25 @@ public class ProcessController {
                 .body(responseBody);
     }
 
+    @GetMapping(value = "/test", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<StreamingResponseBody> liveSamples() {
+        StreamingResponseBody responseBody = (OutputStream outputStream) -> {
+            for(int i = 0 ; i < 5 ; ++i) {
+                outputStream.write(("test " + i + "\n").getBytes());
+                outputStream.flush();
+                try {
+                    Thread.sleep(900000000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            outputStream.close();
+        };
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_EVENT_STREAM_VALUE)
+                .body(responseBody);
+    }
+
     @GetMapping(value = "{processId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
     ResponseEntity<StreamingResponseBody> testReport(@PathVariable long processId) {
         Process process = processRepository.findById(processId).orElseThrow(

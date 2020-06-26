@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.Timestamp;
@@ -30,11 +29,11 @@ public class RectifierService {
     private final SampleRepository sampleRepository;
     private final ProcessRepository processRepository;
     private final RectifierDriver rectifierDriver;
-    private final Set<BlockingQueue<Optional<Sample>>> blockingQueueSet = new HashSet<>();
+    private final Map<Long, Set<BlockingQueue<Optional<Sample>>>> bqMap = new HashMap<>();
 
     @Autowired
     RectifierService(TaskScheduler taskScheduler, SampleRepository sampleRepository,
-                     ProcessRepository processRepository, @Qualifier("mockDriver") RectifierDriver rectifierDriver) {
+                     ProcessRepository processRepository, @Qualifier(value = "mock") RectifierDriver rectifierDriver) {
         this.taskScheduler = taskScheduler;
         this.sampleRepository = sampleRepository;
         this.processRepository = processRepository;
@@ -44,12 +43,13 @@ public class RectifierService {
     public void startProcess(long processId) {
         Process process = processRepository.findById(processId).orElseThrow(() -> new RuntimeException("Process " +
                 "doesn't exist."));
+        bqMap.put(processId, new HashSet<>());
         ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(() -> {
             Sample sample = rectifierDriver.readSample(process.getBath().getId());
             sample.setProcess(process);
             sampleRepository.save(sample);
-            synchronized (blockingQueueSet) {
-                for (BlockingQueue<Optional<Sample>> queue : blockingQueueSet) {
+            synchronized (bqMap.get(processId)) {
+                for (BlockingQueue<Optional<Sample>> queue : bqMap.get(processId)) {
                     queue.add(Optional.of(sample));
                 }
             }
@@ -64,23 +64,36 @@ public class RectifierService {
                 "doesn't exist."));
         ScheduledFuture<?> scheduledFuture = runningProcesses.get(processId);
         process.setStopTimestamp(new Timestamp(System.currentTimeMillis()));
-        processRepository.save(process);
         if (scheduledFuture != null) scheduledFuture.cancel(false);
+        if(bqMap.get(processId) != null) {
+            synchronized (bqMap.get(processId)) {
+                for (BlockingQueue<Optional<Sample>> queue : bqMap.get(processId)) {
+                    queue.add(Optional.empty());
+                }
+                bqMap.remove(processId);
+            }
+        }
+        runningProcesses.remove(processId);
+        processRepository.save(process);
     }
 
     public void writeSamples(OutputStream outputStream, long processId) throws IOException {
         JsonGenerator jsonGenerator = new JsonFactory().createGenerator(outputStream);
         jsonGenerator.setCodec(new ObjectMapper());
         BlockingQueue<Optional<Sample>> blockingQueue = new LinkedBlockingQueue<>();
-        blockingQueueSet.add(blockingQueue);
+        Set<BlockingQueue<Optional<Sample>>> bqSet = bqMap.get(processId);
+        if(bqSet == null) return;
+        bqSet.add(blockingQueue);
         Sample sample;
         try {
             while (true) {
                 try {
                     sample = blockingQueue.take().orElse(null);
-                } catch (InterruptedException ie) {continue;}
+                } catch (InterruptedException ie) {
+                    continue;
+                }
                 if (sample == null) break;
-                if (sample.getProcess().getId() == processId) {
+                synchronized (bqMap) {
                     jsonGenerator.writeRaw("data:");
                     jsonGenerator.writeObject(sample);
                     jsonGenerator.writeRaw("\n\n");
@@ -88,8 +101,8 @@ public class RectifierService {
                 }
             }
         } finally {
-            synchronized (blockingQueueSet) {
-                blockingQueueSet.remove(blockingQueue);
+            synchronized (bqSet) {
+                bqSet.remove(blockingQueue);
             }
         }
     }
