@@ -14,6 +14,8 @@ public interface ProcessRepository extends JpaRepository<Process, Long> {
     Optional<Process> findById(long id);
     List<Process> findAll();
     List<Process> findByStartTimestampBetween(Timestamp after, Timestamp before);
+    List<Process> findByStopTimestampBetween(Timestamp after, Timestamp before);
+    List<Process> findByStartTimestampLessThanAndStopTimestampGreaterThan(Timestamp t1, Timestamp t2);
     Process save(Process process);
     long deleteById(long id);
 }

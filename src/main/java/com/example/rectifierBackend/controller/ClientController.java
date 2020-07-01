@@ -38,9 +38,12 @@ public class ClientController {
 
     @GetMapping("byName/{clientName}")
     ResponseEntity<?> getByName(@PathVariable String clientName) {
-        List<Client> clientList = clientRepository
-                .findByCompanyNameContaining(clientName);
-        return ResponseEntity.ok(clientList);
+        return ResponseEntity.ok(clientRepository.findByCompanyNameContaining(clientName));
+    }
+
+    @GetMapping("byNip/{clientNip}")
+    ResponseEntity<?> getByNip(@PathVariable String clientNip) {
+        return ResponseEntity.ok(clientRepository.findByNipContaining(clientNip));
     }
 
     @DeleteMapping("{clientId}")

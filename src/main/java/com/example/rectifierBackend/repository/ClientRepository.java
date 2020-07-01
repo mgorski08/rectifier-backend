@@ -17,6 +17,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     Page<Client> findAll(Pageable pageable);
     List<Client> findByCompanyNameContaining(String companyName);
     Page<Client> findByCompanyNameContaining(String companyName, Pageable pageable);
+    List<Client> findByNipContaining(String nip);
     Client save(Client client);
     void deleteById(Long id);
 }

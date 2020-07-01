@@ -1,5 +1,6 @@
 package com.example.rectifierBackend.controller;
 
+import com.example.rectifierBackend.model.Client;
 import com.example.rectifierBackend.model.Element;
 import com.example.rectifierBackend.repository.ElementRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -7,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RequestMapping("/element")
 @RestController
@@ -32,6 +35,16 @@ public class ElementController {
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Element not found.")
                 );
         return ResponseEntity.ok(element);
+    }
+
+    @GetMapping("byName/{elementName}")
+    ResponseEntity<?> getByName(@PathVariable String elementName) {
+        return ResponseEntity.ok(elementRepository.findByNameContaining(elementName));
+    }
+
+    @GetMapping("byClientId/{clientId}")
+    ResponseEntity<?> getByClientId(@PathVariable long clientId) {
+        return ResponseEntity.ok(elementRepository.findByClientId(clientId));
     }
 
     @DeleteMapping("{elementId}")

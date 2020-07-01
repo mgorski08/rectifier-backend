@@ -2,6 +2,7 @@ package com.example.rectifierBackend.controller;
 
 import com.example.rectifierBackend.message.request.ProcessForm;
 import com.example.rectifierBackend.model.Bath;
+import com.example.rectifierBackend.model.Client;
 import com.example.rectifierBackend.model.Process;
 import com.example.rectifierBackend.model.User;
 import com.example.rectifierBackend.repository.BathRepository;
@@ -24,6 +25,8 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.Timestamp;
+import java.util.List;
 
 @RequestMapping("/process")
 @RestController
@@ -78,6 +81,21 @@ public class ProcessController {
     @GetMapping("")
     ResponseEntity<?> getAll() {
         return ResponseEntity.ok(processRepository.findAll());
+    }
+
+    @GetMapping("byStart/{start}/{end}")
+    ResponseEntity<?> getByStart(@PathVariable Timestamp start, @PathVariable Timestamp stop) {
+        return ResponseEntity.ok(processRepository.findByStartTimestampBetween(start, stop));
+    }
+
+    @GetMapping("byStop/{start}/{end}")
+    ResponseEntity<?> getByEnd(@PathVariable Timestamp start, @PathVariable Timestamp stop) {
+        return ResponseEntity.ok(processRepository.findByStopTimestampBetween(start, stop));
+    }
+
+    @GetMapping("byRanAt/{time}")
+    ResponseEntity<?> getByName(@PathVariable Timestamp time) {
+        return ResponseEntity.ok(processRepository.findByStartTimestampLessThanAndStopTimestampGreaterThan(time, time));
     }
 
     @PostMapping("/start")
