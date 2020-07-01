@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @RequestMapping("/client")
 @RestController
 @CrossOrigin
@@ -32,6 +34,13 @@ public class ClientController {
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Client not found.")
                 );
         return ResponseEntity.ok(client);
+    }
+
+    @GetMapping("byName/{clientName}")
+    ResponseEntity<?> getByName(@PathVariable String clientName) {
+        List<Client> clientList = clientRepository
+                .findByCompanyNameContaining(clientName);
+        return ResponseEntity.ok(clientList);
     }
 
     @DeleteMapping("{clientId}")
