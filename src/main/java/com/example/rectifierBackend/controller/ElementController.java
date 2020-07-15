@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/element")
@@ -25,6 +26,16 @@ public class ElementController {
     @GetMapping("")
     ResponseEntity<?> getAll() {
         return ResponseEntity.ok(elementRepository.findAll());
+    }
+
+    @GetMapping("justNames")
+    ResponseEntity<?> getNames() {
+        List<Element> originalList = elementRepository.findAll();
+        List<String> result = new ArrayList<>(originalList.size());
+        for(Element element : originalList) {
+            result.add(element.getName());
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("{elementId}")

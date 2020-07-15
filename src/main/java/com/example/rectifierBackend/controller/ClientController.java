@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/client")
@@ -24,6 +25,16 @@ public class ClientController {
     @GetMapping("")
     ResponseEntity<?> getAll() {
         return ResponseEntity.ok(clientRepository.findAll());
+    }
+
+    @GetMapping("justNames")
+    ResponseEntity<?> getNames() {
+        List<Client> originalList = clientRepository.findAll();
+        List<String> result = new ArrayList<>(originalList.size());
+        for(Client client : originalList) {
+            result.add(client.getCompanyName());
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("{clientId}")
