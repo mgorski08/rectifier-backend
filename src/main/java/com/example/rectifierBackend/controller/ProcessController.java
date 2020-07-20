@@ -94,8 +94,13 @@ public class ProcessController {
     }
 
     @GetMapping("byRanAt/{time}")
-    ResponseEntity<?> getByName(@PathVariable Timestamp time) {
+    ResponseEntity<?> getByRanAt(@PathVariable Timestamp time) {
         return ResponseEntity.ok(processRepository.findByStartTimestampLessThanAndStopTimestampGreaterThan(time, time));
+    }
+
+    @GetMapping("byOrderId/{id}")
+    ResponseEntity<?> getByOrderId(@PathVariable long id) {
+        return ResponseEntity.ok(processRepository.findByOrderId(id));
     }
 
     @PostMapping("/start")

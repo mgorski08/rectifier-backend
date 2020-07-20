@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface ProcessRepository extends JpaRepository<Process, Long> {
     Optional<Process> findById(long id);
     List<Process> findAll();
+    List<Process> findByOrderId(long id);
     List<Process> findByStartTimestampBetween(Timestamp after, Timestamp before);
     List<Process> findByStopTimestampBetween(Timestamp after, Timestamp before);
     List<Process> findByStartTimestampLessThanAndStopTimestampGreaterThan(Timestamp t1, Timestamp t2);
