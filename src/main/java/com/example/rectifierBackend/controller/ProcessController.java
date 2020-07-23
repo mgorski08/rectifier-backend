@@ -1,11 +1,10 @@
 package com.example.rectifierBackend.controller;
 
 import com.example.rectifierBackend.message.request.ProcessForm;
-import com.example.rectifierBackend.model.Bath;
-import com.example.rectifierBackend.model.Client;
+import com.example.rectifierBackend.model.*;
 import com.example.rectifierBackend.model.Process;
-import com.example.rectifierBackend.model.User;
 import com.example.rectifierBackend.repository.BathRepository;
+import com.example.rectifierBackend.repository.ElementRepository;
 import com.example.rectifierBackend.repository.ProcessRepository;
 import com.example.rectifierBackend.repository.SampleRepository;
 import com.example.rectifierBackend.service.RectifierService;
@@ -35,18 +34,21 @@ public class ProcessController {
 
     private final ProcessRepository processRepository;
     private final BathRepository bathRepository;
+    private final ElementRepository elementRepository;
     private final SampleRepository sampleRepository;
     private final RectifierService rectifierService;
     private final Log logger = LogFactory.getLog(getClass());
 
     public ProcessController(ProcessRepository processRepository,
                              BathRepository bathRepository,
+                             ElementRepository elementRepository,
                              SampleRepository sampleRepository,
                              RectifierService rectifierService) {
         this.processRepository = processRepository;
         this.bathRepository = bathRepository;
         this.sampleRepository = sampleRepository;
         this.rectifierService = rectifierService;
+        this.elementRepository = elementRepository;
     }
 
     @GetMapping("{processId}")
@@ -111,7 +113,7 @@ public class ProcessController {
         Bath bath = bathRepository
                 .findById(processForm.getBathId())
                 .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bath not found.")
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bath not found")
                 );
         if(bath.getUser() == null || bath.getUser().getId() != user.getId()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bath not occupied by current user");
@@ -119,8 +121,15 @@ public class ProcessController {
         if(bath.getProcess() != null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A process is already started for this bath");
         }
+        Element element = elementRepository
+                .findById(processForm.getElementId())
+                .orElseThrow(
+                        ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Element not found")
+                );
+
         Process process = new Process();
         process.setBath(bath);
+        process.setElement(element);
         bath.setProcess(process);
         process.setDescription(processForm.getDescription());
         process.setOperator(user);

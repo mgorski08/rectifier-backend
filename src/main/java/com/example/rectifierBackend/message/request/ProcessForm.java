@@ -5,6 +5,7 @@ public class ProcessForm {
     private String description;
     private long bathId;
     private long orderId;
+    private long elementId;
 
     public String getDescription() {
         return description;
@@ -28,5 +29,13 @@ public class ProcessForm {
 
     public void setOrderId(long orderId) {
         this.orderId = orderId;
+    }
+
+    public long getElementId() {
+        return elementId;
+    }
+
+    public void setElementId(long elementId) {
+        this.elementId = elementId;
     }
 }
