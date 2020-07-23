@@ -3,10 +3,7 @@ package com.example.rectifierBackend.controller;
 import com.example.rectifierBackend.message.request.ProcessForm;
 import com.example.rectifierBackend.model.*;
 import com.example.rectifierBackend.model.Process;
-import com.example.rectifierBackend.repository.BathRepository;
-import com.example.rectifierBackend.repository.ElementRepository;
-import com.example.rectifierBackend.repository.ProcessRepository;
-import com.example.rectifierBackend.repository.SampleRepository;
+import com.example.rectifierBackend.repository.*;
 import com.example.rectifierBackend.service.RectifierService;
 import com.lowagie.text.Document;
 import com.lowagie.text.Paragraph;
@@ -36,6 +33,7 @@ public class ProcessController {
     private final BathRepository bathRepository;
     private final ElementRepository elementRepository;
     private final SampleRepository sampleRepository;
+    private final OrderRepository orderRepository;
     private final RectifierService rectifierService;
     private final Log logger = LogFactory.getLog(getClass());
 
@@ -43,11 +41,13 @@ public class ProcessController {
                              BathRepository bathRepository,
                              ElementRepository elementRepository,
                              SampleRepository sampleRepository,
+                             OrderRepository orderRepository,
                              RectifierService rectifierService) {
         this.processRepository = processRepository;
         this.bathRepository = bathRepository;
         this.sampleRepository = sampleRepository;
         this.rectifierService = rectifierService;
+        this.orderRepository = orderRepository;
         this.elementRepository = elementRepository;
     }
 
@@ -126,10 +126,16 @@ public class ProcessController {
                 .orElseThrow(
                         ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Element not found")
                 );
+        Order order = orderRepository
+                .findById(processForm.getOrderId())
+                .orElseThrow(
+                        ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")
+                );
 
         Process process = new Process();
         process.setBath(bath);
         process.setElement(element);
+        process.setOrder(order);
         bath.setProcess(process);
         process.setDescription(processForm.getDescription());
         process.setOperator(user);
