@@ -4,20 +4,26 @@ import com.example.rectifierBackend.message.request.SignUpForm;
 import com.example.rectifierBackend.message.response.ResponseMessage;
 import com.example.rectifierBackend.model.User;
 import com.example.rectifierBackend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 @RequestMapping("/user")
 @RestController
 @CrossOrigin
 public class UserController {
+
+    private static final String DEFAULT_USERNAME = "default";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -65,6 +71,21 @@ public class UserController {
 
         return new ResponseEntity<>(new ResponseMessage("User registered successfully."), HttpStatus.OK);
 
+    }
+
+    @PostMapping("defaultUser")
+    ResponseEntity<?> addDefaultUser() {
+        String defaultPassword = Optional.ofNullable(
+                System.getenv("DEFAULT_PASSWORD"))
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Default password not set")
+                );
+        userRepository.deleteByUsername(DEFAULT_USERNAME);
+        SignUpForm signUpForm = new SignUpForm();
+        signUpForm.setUsername(DEFAULT_USERNAME);
+        signUpForm.setPassword(defaultPassword);
+        signUpForm.setRoles(Collections.singleton("admin"));
+        return addUser(signUpForm);
     }
 
     @DeleteMapping("{userId}")

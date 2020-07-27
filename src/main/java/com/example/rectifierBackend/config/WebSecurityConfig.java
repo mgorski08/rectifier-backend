@@ -41,10 +41,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder.userDetailsService((String username) -> {
-            return userRepository.findByUsername(username).orElseThrow(
-                    () -> new UsernameNotFoundException("User Not Found with -> username: " + username));
-        }).passwordEncoder(passwordEncoder());
+        authenticationManagerBuilder.userDetailsService((String username) ->
+                userRepository.findByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("User Not Found with -> username: " + username)))
+                .passwordEncoder(passwordEncoder());
     }
 
     @Bean
