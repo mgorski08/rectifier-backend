@@ -170,23 +170,6 @@ public class ProcessController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping(value = "/{processId}/liveSamples", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<StreamingResponseBody> liveSamples(@PathVariable long processId) {
-        StreamingResponseBody responseBody = (OutputStream outputStream) -> {
-            try {
-                rectifierService.writeSamples(outputStream, processId);
-            } catch (ClientAbortException cae) {
-                logger.info("Client disconnected while streaming.");
-            } catch (Exception e) {
-                logger.error("Error while streaming.", e);
-            }
-            outputStream.close();
-        };
-        return ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_EVENT_STREAM_VALUE)
-                .body(responseBody);
-    }
-
     @GetMapping(value = "/test", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<StreamingResponseBody> liveSamples() {
         StreamingResponseBody responseBody = (OutputStream outputStream) -> {

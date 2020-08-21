@@ -73,7 +73,7 @@ public class UserController {
 
     }
 
-    @PostMapping("defaultUser")
+    @GetMapping("defaultUser")
     ResponseEntity<?> addDefaultUser() {
         String defaultPassword = Optional.ofNullable(
                 System.getenv("DEFAULT_PASSWORD"))

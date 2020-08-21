@@ -5,20 +5,16 @@ import com.example.rectifierBackend.model.Process;
 import com.example.rectifierBackend.model.Sample;
 import com.example.rectifierBackend.repository.ProcessRepository;
 import com.example.rectifierBackend.repository.SampleRepository;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.rectifierBackend.service.event.Event;
+import com.example.rectifierBackend.service.event.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 
 @Service
@@ -29,15 +25,18 @@ public class RectifierService {
     private final SampleRepository sampleRepository;
     private final ProcessRepository processRepository;
     private final RectifierDriver rectifierDriver;
+    private final EventService eventService;
     private final Map<Long, Set<BlockingQueue<Optional<Sample>>>> bqMap = new HashMap<>();
 
     @Autowired
     RectifierService(TaskScheduler taskScheduler, SampleRepository sampleRepository,
-                     ProcessRepository processRepository, @Qualifier(value = "mock") RectifierDriver rectifierDriver) {
+                     ProcessRepository processRepository, @Qualifier(value = "mock") RectifierDriver rectifierDriver,
+                     EventService eventService) {
         this.taskScheduler = taskScheduler;
         this.sampleRepository = sampleRepository;
         this.processRepository = processRepository;
         this.rectifierDriver = rectifierDriver;
+        this.eventService = eventService;
     }
 
     public void startProcess(long processId) {
@@ -57,6 +56,7 @@ public class RectifierService {
         runningProcesses.put(processId, scheduledFuture);
         process.setStartTimestamp(new Timestamp(System.currentTimeMillis()));
         processRepository.save(process);
+        eventService.dispatchEvent(new Event<>(Event.PROCESS_STARTED, process));
     }
 
     public void stopProcess(long processId) {
@@ -65,7 +65,7 @@ public class RectifierService {
         ScheduledFuture<?> scheduledFuture = runningProcesses.get(processId);
         process.setStopTimestamp(new Timestamp(System.currentTimeMillis()));
         if (scheduledFuture != null) scheduledFuture.cancel(false);
-        if(bqMap.get(processId) != null) {
+        if (bqMap.get(processId) != null) {
             synchronized (bqMap.get(processId)) {
                 for (BlockingQueue<Optional<Sample>> queue : bqMap.get(processId)) {
                     queue.add(Optional.empty());
@@ -75,35 +75,6 @@ public class RectifierService {
         }
         runningProcesses.remove(processId);
         processRepository.save(process);
-    }
-
-    public void writeSamples(OutputStream outputStream, long processId) throws IOException {
-        JsonGenerator jsonGenerator = new JsonFactory().createGenerator(outputStream);
-        jsonGenerator.setCodec(new ObjectMapper());
-        BlockingQueue<Optional<Sample>> blockingQueue = new LinkedBlockingQueue<>();
-        Set<BlockingQueue<Optional<Sample>>> bqSet = bqMap.get(processId);
-        if(bqSet == null) return;
-        bqSet.add(blockingQueue);
-        Sample sample;
-        try {
-            while (true) {
-                try {
-                    sample = blockingQueue.take().orElse(null);
-                } catch (InterruptedException ie) {
-                    continue;
-                }
-                if (sample == null) break;
-                synchronized (bqMap) {
-                    jsonGenerator.writeRaw("data:");
-                    jsonGenerator.writeObject(sample);
-                    jsonGenerator.writeRaw("\n\n");
-                    jsonGenerator.flush();
-                }
-            }
-        } finally {
-            synchronized (bqSet) {
-                bqSet.remove(blockingQueue);
-            }
-        }
+        eventService.dispatchEvent(new Event<>(Event.PROCESS_STOPPED, process));
     }
 }
